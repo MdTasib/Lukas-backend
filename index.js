@@ -45,6 +45,7 @@ async function run() {
 		const productCollection = client.db("lukas").collection("products");
 		const userCollection = client.db("lukas").collection("users");
 		const purchaseCollection = client.db("lukas").collection("purcahses");
+		const reviewCollection = client.db("lukas").collection("reviews");
 
 		// get all products
 		app.get("/product", async (req, res) => {
@@ -68,16 +69,7 @@ async function run() {
 		});
 
 		// get purchase booking product
-		// get all bookings
-		// app.get("/purcahses/:email", verifyToken, async (req, res) => {
-		// 	const email = req.params.email;
-
-		// 	console.log(email);
-		// 	const filter = { userEmail: email };
-		// 	const result = await purchaseCollection.find(filter).toArray();
-		// 	res.send(result);
-		// });
-
+		// get all bookingsnd
 		app.get("/purcahses", verifyToken, async (req, res) => {
 			const email = req.query.email;
 			const decodedEmail = req.decoded.email;
@@ -87,6 +79,21 @@ async function run() {
 				const bookings = await purchaseCollection.find(query).toArray();
 				res.send(bookings);
 			}
+		});
+
+		// user delete product
+		app.delete("/purcahses/:id", verifyToken, async (req, res) => {
+			const id = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const result = await purchaseCollection.deleteOne(filter);
+			res.send(result);
+		});
+
+		// post a review
+		app.post("/review", verifyToken, async (req, res) => {
+			const review = req.body;
+			const result = await reviewCollection.insertOne(review);
+			res.send(result);
 		});
 
 		// user
