@@ -67,6 +67,28 @@ async function run() {
 			res.send(result);
 		});
 
+		// get purchase booking product
+		// get all bookings
+		// app.get("/purcahses/:email", verifyToken, async (req, res) => {
+		// 	const email = req.params.email;
+
+		// 	console.log(email);
+		// 	const filter = { userEmail: email };
+		// 	const result = await purchaseCollection.find(filter).toArray();
+		// 	res.send(result);
+		// });
+
+		app.get("/purcahses", verifyToken, async (req, res) => {
+			const email = req.query.email;
+			const decodedEmail = req.decoded.email;
+			// you have token, but you don't see another email service
+			if (email === decodedEmail) {
+				const query = { userEmail: email };
+				const bookings = await purchaseCollection.find(query).toArray();
+				res.send(bookings);
+			}
+		});
+
 		// user
 		app.put("/user/:email", async (req, res) => {
 			const user = req.body;
@@ -80,7 +102,7 @@ async function run() {
 			const token = jwt.sign(
 				{ email: email },
 				process.env.ACCESS_TOKEN_SECRET,
-				{ expiresIn: "5h" }
+				{ expiresIn: "1h" }
 			);
 			res.send({ result, token });
 		});
