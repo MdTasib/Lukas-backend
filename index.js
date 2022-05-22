@@ -40,8 +40,11 @@ async function run() {
 	try {
 		// perform actions on the collection object
 		await client.connect();
+
+		// database collections
 		const productCollection = client.db("lukas").collection("products");
 		const userCollection = client.db("lukas").collection("users");
+		const purchaseCollection = client.db("lukas").collection("purcahses");
 
 		// get all products
 		app.get("/product", async (req, res) => {
@@ -54,6 +57,13 @@ async function run() {
 			const id = req.params.id;
 			const query = { _id: ObjectId(id) };
 			const result = await productCollection.findOne(query);
+			res.send(result);
+		});
+
+		// purchase product
+		app.post("/product", async (req, res) => {
+			const product = req.body;
+			const result = await purchaseCollection.insertOne(product);
 			res.send(result);
 		});
 
