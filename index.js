@@ -68,6 +68,27 @@ async function run() {
 			res.send(result);
 		});
 
+		// update product quantity
+		app.put("/product/:id", async (req, res) => {
+			const id = req.params.id;
+			const product = req.body;
+			const filter = { _id: ObjectId(id) };
+			const options = { upsert: true };
+
+			const updateData = {
+				$set: {
+					available: product.newQuantity,
+				},
+			};
+
+			const result = await productCollection.updateOne(
+				filter,
+				updateData,
+				options
+			);
+			res.send(result);
+		});
+
 		// get purchase booking product
 		// get all bookingsnd
 		app.get("/purcahses", verifyToken, async (req, res) => {
