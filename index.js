@@ -40,7 +40,6 @@ async function run() {
 	try {
 		// perform actions on the collection object
 		await client.connect();
-
 		// database collections
 		const productCollection = client.db("lukas").collection("products");
 		const userCollection = client.db("lukas").collection("users");
@@ -166,6 +165,28 @@ async function run() {
 			);
 			res.send(result);
 		});
+
+		// upload a product
+		app.post("/uploadProduct", verifyToken, async (req, res) => {
+			const product = req.body;
+			const result = await productCollection.insertOne(product);
+			res.send(result);
+		});
+
+		// varifyAdmin function. check user is Admin
+		async function verifyAdmin(req, res, next) {
+			// check request email is already admin
+			// if email is already admin - make an admin. otherwise don't make admin;
+			const requester = req.decoded.email;
+			const requesterAccount = await userCollection.findOne({
+				email: requester,
+			});
+			if (requesterAccount.role === "admin") {
+				next();
+			} else {
+				res.status(403).send({ message: "Forbidden" });
+			}
+		}
 	} finally {
 	}
 }
