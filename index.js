@@ -187,6 +187,30 @@ async function run() {
 				res.status(403).send({ message: "Forbidden" });
 			}
 		}
+
+		// get all user
+		app.get("/user", verifyToken, async (req, res) => {
+			const users = await userCollection.find().toArray();
+			res.send(users);
+		});
+
+		// make a user admin
+		app.put(
+			"/user/admin/:email",
+			verifyToken,
+			verifyAdmin,
+			async (req, res) => {
+				const email = req.params.email;
+				const filter = { email: email };
+
+				const updateDoc = {
+					// update and add a new method is role: "admin"
+					$set: { role: "admin" },
+				};
+				const result = await userCollection.updateOne(filter, updateDoc);
+				res.send(result);
+			}
+		);
 	} finally {
 	}
 }
