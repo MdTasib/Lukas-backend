@@ -44,6 +44,7 @@ async function run() {
 		// database collections
 		const productCollection = client.db("lukas").collection("products");
 		const userCollection = client.db("lukas").collection("users");
+		const userProfileCollection = client.db("lukas").collection("userProfiles");
 		const purchaseCollection = client.db("lukas").collection("purcahses");
 		const reviewCollection = client.db("lukas").collection("reviews");
 
@@ -74,7 +75,6 @@ async function run() {
 			const product = req.body;
 			const filter = { _id: ObjectId(id) };
 			const options = { upsert: true };
-
 			const updateData = {
 				$set: {
 					available: product.newQuantity,
@@ -117,6 +117,12 @@ async function run() {
 			res.send(result);
 		});
 
+		// get all reviews
+		app.get("/review", async (req, res) => {
+			const reviews = await reviewCollection.find().toArray();
+			res.send(reviews);
+		});
+
 		// user
 		app.put("/user/:email", async (req, res) => {
 			const user = req.body;
@@ -133,6 +139,32 @@ async function run() {
 				{ expiresIn: "1h" }
 			);
 			res.send({ result, token });
+		});
+
+		// get a specific user profile
+		app.get("/userProfile/:email", verifyToken, async (req, res) => {
+			const email = req.params.email;
+			const query = { email: email };
+			const result = await userProfileCollection.findOne(query);
+			res.send(result);
+		});
+
+		// update a user profile information
+		app.put("/userProfile/:email", verifyToken, async (req, res) => {
+			const user = req.body;
+			const email = req.params.email;
+			const filter = { email: email };
+			const options = { upsert: true };
+			const updateDoc = {
+				$set: user,
+			};
+
+			const result = await userProfileCollection.updateOne(
+				filter,
+				updateDoc,
+				options
+			);
+			res.send(result);
 		});
 	} finally {
 	}
