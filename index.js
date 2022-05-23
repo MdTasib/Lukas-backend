@@ -194,6 +194,14 @@ async function run() {
 			res.send(users);
 		});
 
+		// ckeck user is admin and get admin
+		app.get("/admin/:email", async (req, res) => {
+			const email = req.params.email;
+			const user = await userCollection.findOne({ email: email });
+			const isAdmin = user.role === "admin";
+			res.send({ admin: isAdmin });
+		});
+
 		// make a user admin
 		app.put(
 			"/user/admin/:email",
