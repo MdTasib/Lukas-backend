@@ -47,6 +47,21 @@ async function run() {
 		const purchaseCollection = client.db("lukas").collection("purcahses");
 		const reviewCollection = client.db("lukas").collection("reviews");
 
+		// varifyAdmin function. check user is Admin
+		async function verifyAdmin(req, res, next) {
+			// check request email is already admin
+			// if email is already admin - make an admin. otherwise don't make admin;
+			const requester = req.decoded.email;
+			const requesterAccount = await userCollection.findOne({
+				email: requester,
+			});
+			if (requesterAccount.role === "admin") {
+				next();
+			} else {
+				res.status(403).send({ message: "Forbidden" });
+			}
+		}
+
 		// get all products
 		app.get("/product", async (req, res) => {
 			const products = await productCollection.find().toArray();
@@ -101,7 +116,7 @@ async function run() {
 			}
 		});
 
-		// user delete product
+		// user delete purchases product
 		app.delete("/purcahses/:id", verifyToken, async (req, res) => {
 			const id = req.params.id;
 			const filter = { _id: ObjectId(id) };
@@ -135,7 +150,7 @@ async function run() {
 			const token = jwt.sign(
 				{ email: email },
 				process.env.ACCESS_TOKEN_SECRET,
-				{ expiresIn: "1h" }
+				{ expiresIn: "24h" }
 			);
 			res.send({ result, token });
 		});
@@ -173,21 +188,6 @@ async function run() {
 			res.send(result);
 		});
 
-		// varifyAdmin function. check user is Admin
-		async function verifyAdmin(req, res, next) {
-			// check request email is already admin
-			// if email is already admin - make an admin. otherwise don't make admin;
-			const requester = req.decoded.email;
-			const requesterAccount = await userCollection.findOne({
-				email: requester,
-			});
-			if (requesterAccount.role === "admin") {
-				next();
-			} else {
-				res.status(403).send({ message: "Forbidden" });
-			}
-		}
-
 		// get all user
 		app.get("/user", verifyToken, async (req, res) => {
 			const users = await userCollection.find().toArray();
@@ -219,6 +219,20 @@ async function run() {
 				res.send(result);
 			}
 		);
+
+		// get all bookings
+		app.get("/purchases", verifyToken, verifyAdmin, async (req, res) => {
+			const purcahses = await purchaseCollection.find().toArray();
+			res.send(purcahses);
+		});
+
+		// admin can delete product on database
+		app.delete("/product/:id", verifyToken, verifyAdmin, async (req, res) => {
+			const id = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const result = await productCollection.deleteOne(filter);
+			res.send(result);
+		});
 	} finally {
 	}
 }
