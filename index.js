@@ -90,7 +90,7 @@ async function run() {
 				$set: {
 					productId: payment.productId,
 					product: payment.product,
-					stutas: payment.status,
+					status: payment.status,
 					paid: true,
 					transactionId: payment.transactionId,
 				},
@@ -281,6 +281,26 @@ async function run() {
 			const id = req.params.id;
 			const filter = { _id: ObjectId(id) };
 			const result = await productCollection.deleteOne(filter);
+			res.send(result);
+		});
+
+		// update purcahces product status
+		app.put("/purchases/:id", verifyToken, verifyAdmin, async (req, res) => {
+			const id = req.params.id;
+			const product = req.body;
+			const filter = { _id: ObjectId(id) };
+			const options = { upsert: true };
+			const updateData = {
+				$set: {
+					status: product.status,
+				},
+			};
+
+			const result = await productCollection.updateOne(
+				filter,
+				updateData,
+				options
+			);
 			res.send(result);
 		});
 	} finally {
