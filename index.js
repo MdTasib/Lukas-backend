@@ -116,6 +116,14 @@ async function run() {
 			}
 		});
 
+		// get purchases on specific id
+		app.get("/purcahses/:id", verifyToken, async (req, res) => {
+			const id = req.params.id;
+			const filter = { _id: ObjectId(id) };
+			const result = await purchaseCollection.findOne(filter);
+			res.send(result);
+		});
+
 		// user delete purchases product
 		app.delete("/purcahses/:id", verifyToken, async (req, res) => {
 			const id = req.params.id;
