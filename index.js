@@ -296,7 +296,7 @@ async function run() {
 				},
 			};
 
-			const result = await productCollection.updateOne(
+			const result = await purchaseCollection.updateOne(
 				filter,
 				updateData,
 				options
