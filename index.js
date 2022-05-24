@@ -5,6 +5,7 @@ const port = process.env.PORT || 5000;
 require("dotenv").config();
 const app = express();
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.Payment_Secket_Key);
 
 // middleware
 app.use(cors());
@@ -46,6 +47,7 @@ async function run() {
 		const userProfileCollection = client.db("lukas").collection("userProfiles");
 		const purchaseCollection = client.db("lukas").collection("purcahses");
 		const reviewCollection = client.db("lukas").collection("reviews");
+		const paymentCollection = client.db("lukas").collection("payments");
 
 		// varifyAdmin function. check user is Admin
 		async function verifyAdmin(req, res, next) {
@@ -61,6 +63,46 @@ async function run() {
 				res.status(403).send({ message: "Forbidden" });
 			}
 		}
+
+		/**
+		 * payment system implement
+		 * useing stripe payment getway
+		 */
+		// payment system
+		app.post("/create-payment-intent", verifyToken, async (req, res) => {
+			const product = req.body;
+			const price = product.payPrice;
+			const amount = price * 100;
+			const paymentIntent = await stripe.paymentIntents.create({
+				amount: amount,
+				currency: "usd",
+				payment_method_types: ["card"],
+			});
+			res.send({ clientSecret: paymentIntent.client_secret });
+		});
+
+		// payment confirm
+		app.patch("/purcahses/:id", async (req, res) => {
+			const id = req.params.id;
+			const payment = req.body;
+			const filter = { _id: ObjectId(id) };
+			const updatedDoc = {
+				$set: {
+					productId: payment.productId,
+					product: payment.product,
+					stutas: payment.status,
+					paid: true,
+					transactionId: payment.transactionId,
+				},
+			};
+
+			const result = await paymentCollection.insertOne(payment);
+			const updatePurcahse = await purchaseCollection.updateOne(
+				filter,
+				updatedDoc
+			);
+			res.send(updatedDoc);
+		});
 
 		// get all products
 		app.get("/product", async (req, res) => {
