@@ -17,10 +17,6 @@
 		"start-dev": "nodemon index.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/programming-hero-web-course1/manufacturer-website-server-side-MdTasib.git"
-	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC"
